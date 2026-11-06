@@ -28,7 +28,6 @@
             android:scaleType="fitXY"
             android:adjustViewBounds="true"/>
 
-        <!-- Layout for the Add (+) card -->
         <LinearLayout
             android:id="@+id/layoutAddCard"
             android:layout_width="match_parent"

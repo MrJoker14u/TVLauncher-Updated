@@ -143,7 +143,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="#FFC107"
+                android:hint="#00E5FF"
                 android:textColor="#FFFFFF"
                 android:textColorHint="#66FFFFFF"/>
             <View
@@ -151,7 +151,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_marginStart="12dp"
-                android:background="#FFC107"/>
+                android:background="#00E5FF"/>
         </LinearLayout>
 
         <!-- Background Color with Preview -->
@@ -198,7 +198,7 @@
             android:layout_height="42dp"
             android:text="CHOOSE WALLPAPER"
             android:textColor="#FFFFFF"
-            android:background="@drawable/input_btn_selector"
+            android:background="#2E3B43"
             android:layout_marginBottom="8dp"/>
 
         <Button
@@ -207,7 +207,7 @@
             android:layout_height="42dp"
             android:text="REMOVE WALLPAPER"
             android:textColor="#FFFFFF"
-            android:background="@drawable/input_btn_selector"
+            android:background="#2E3B43"
             android:layout_marginBottom="18dp"/>
 
         <LinearLayout

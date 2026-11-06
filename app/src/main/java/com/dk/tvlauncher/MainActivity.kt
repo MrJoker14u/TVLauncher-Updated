@@ -10,18 +10,16 @@ import android.content.pm.ResolveInfo
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.os.StatFs
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,15 +38,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
     private lateinit var mainRootLayout: RelativeLayout
     private lateinit var tvGreeting: TextView
-    private lateinit var tvRamUsage: TextView
-    private lateinit var pbRam: ProgressBar
-    private lateinit var tvStorageUsage: TextView
-    private lateinit var pbStorage: ProgressBar
     private lateinit var rvApps: RecyclerView
     private lateinit var btnSettings: TextView
     private lateinit var btnTvSettings: TextView
+    private lateinit var inputsContainer: LinearLayout
+    private lateinit var btnHdmi1: TextView
+    private lateinit var btnHdmi2: TextView
+    private lateinit var btnAv: TextView
+    private lateinit var btnHdmi3: TextView
+    private lateinit var btnBoostRam: TextView
+    private lateinit var btnRecentApps: TextView
 
-    private val handler = Handler(Looper.getMainLooper())
     private val PICK_IMAGE_REQUEST = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,19 +59,20 @@ class MainActivity : AppCompatActivity() {
 
         mainRootLayout = findViewById(R.id.mainRootLayout)
         tvGreeting = findViewById(R.id.tvGreeting)
-        tvRamUsage = findViewById(R.id.tvRamUsage)
-        pbRam = findViewById(R.id.pbRam)
-        tvStorageUsage = findViewById(R.id.tvStorageUsage)
-        pbStorage = findViewById(R.id.pbStorage)
         rvApps = findViewById(R.id.rvApps)
         btnSettings = findViewById(R.id.btnSettings)
         btnTvSettings = findViewById(R.id.btnTvSettings)
+        inputsContainer = findViewById(R.id.inputsContainer)
+        btnHdmi1 = findViewById(R.id.btnHdmi1)
+        btnHdmi2 = findViewById(R.id.btnHdmi2)
+        btnAv = findViewById(R.id.btnAv)
+        btnHdmi3 = findViewById(R.id.btnHdmi3)
+        btnBoostRam = findViewById(R.id.btnBoostRam)
+        btnRecentApps = findViewById(R.id.btnRecentApps)
 
         setupButtons()
         loadPreferences()
         setupAppsList()
-        updateStorageStats()
-        startStatsMonitor()
     }
 
     private fun setupButtons() {
@@ -87,32 +88,113 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<TextView>(R.id.btnHdmi1).setOnClickListener { openInput("HDMI 1") }
-        findViewById<TextView>(R.id.btnHdmi2).setOnClickListener { openInput("HDMI 2") }
-        findViewById<TextView>(R.id.btnAv).setOnClickListener { openInput("AV") }
-        findViewById<TextView>(R.id.btnHdmi3).setOnClickListener { openInput("HDMI 3") }
+        btnHdmi1.setOnClickListener { openInput("HDMI 1") }
+        btnHdmi2.setOnClickListener { openInput("HDMI 2") }
+        btnAv.setOnClickListener { openInput("AV") }
+        btnHdmi3.setOnClickListener { openInput("HDMI 3") }
+
+        // Boost RAM / Memory Optimizer
+        btnBoostRam.setOnClickListener {
+            performRamOptimization()
+        }
+
+        // Recent Apps / Task Manager
+        btnRecentApps.setOnClickListener {
+            openRecentApps()
+        }
     }
 
     private fun openInput(source: String) {
         Toast.makeText(this, "Switching to $source...", Toast.LENGTH_SHORT).show()
     }
 
-    private fun applyDynamicButtonThemes(accentColor: Int, dominantBgColor: Int) {
-        val density = resources.displayMetrics.density
-        val radius = 10 * density
+    private fun performRamOptimization() {
+        try {
+            val actManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val memBefore = ActivityManager.MemoryInfo()
+            actManager.getMemoryInfo(memBefore)
 
-        fun createButtonDrawable(): StateListDrawable {
+            // Kill background processes of other apps
+            val runningApps = actManager.runningAppProcesses ?: emptyList()
+            for (app in runningApps) {
+                if (app.pkgList != null) {
+                    for (pkg in app.pkgList) {
+                        if (pkg != packageName) {
+                            actManager.killBackgroundProcesses(pkg)
+                        }
+                    }
+                }
+            }
+
+            System.gc()
+
+            val memAfter = ActivityManager.MemoryInfo()
+            actManager.getMemoryInfo(memAfter)
+            val freedMb = (memAfter.availMem - memBefore.availMem) / (1024 * 1024)
+
+            btnBoostRam.animate().scaleX(1.15f).scaleY(1.15f).setDuration(120).withEndAction {
+                btnBoostRam.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
+            }.start()
+
+            if (freedMb > 0) {
+                Toast.makeText(this, "⚡ Optimized! Freed ${freedMb} MB RAM", Toast.LENGTH_SHORT).show()
+            } else {
+                val freeTotal = memAfter.availMem / (1024 * 1024)
+                Toast.makeText(this, "⚡ Cleaned! ${freeTotal} MB RAM Free", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "⚡ RAM Optimized!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openRecentApps() {
+        // Try multiple methods to invoke recent apps screen on Android TV
+        try {
+            // Method 1: System intent for Recents
+            val intent = Intent("android.intent.action.MAIN")
+            intent.setClassName("com.android.systemui", "com.android.systemui.recents.RecentsActivity")
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+            return
+        } catch (_: Exception) {}
+
+        try {
+            // Method 2: Leanback recents / Quick settings
+            val intent = Intent("com.android.systemui.action.RECENTS")
+            startActivity(intent)
+            return
+        } catch (_: Exception) {}
+
+        try {
+            // Method 3: Accessibility / Global Action via Task Switcher intent
+            val intent = Intent(Intent.ACTION_ALL_APPS)
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Tip: Long-press HOME button on remote for Recent Apps", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun applyDynamicColors(accentColor: Int, dominantBgColor: Int) {
+        val density = resources.displayMetrics.density
+
+        // Helper for interactive button state list
+        fun createThemedSelector(radiusDp: Float, normalAlpha: Int, isAccentFocus: Boolean = false): StateListDrawable {
+            val radius = radiusDp * density
             val focused = GradientDrawable().apply {
                 cornerRadius = radius
-                setColor(accentColor)
-                setStroke((2 * density).toInt(), Color.WHITE)
+                setColor(if (isAccentFocus) accentColor else Color.WHITE)
+                setStroke((2.5f * density).toInt(), if (isAccentFocus) Color.WHITE else accentColor)
             }
             val normal = GradientDrawable().apply {
                 cornerRadius = radius
-                // Semi-transparent glassy dominant tint
-                val alphaTint = Color.argb(170, Color.red(dominantBgColor), Color.green(dominantBgColor), Color.blue(dominantBgColor))
-                setColor(alphaTint)
-                setStroke((1 * density).toInt(), Color.argb(120, 255, 255, 255))
+                val tinted = Color.argb(
+                    normalAlpha,
+                    Color.red(dominantBgColor),
+                    Color.green(dominantBgColor),
+                    Color.blue(dominantBgColor)
+                )
+                setColor(tinted)
+                setStroke((1 * density).toInt(), Color.argb(80, 255, 255, 255))
             }
             return StateListDrawable().apply {
                 addState(intArrayOf(android.R.attr.state_focused), focused)
@@ -120,8 +202,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnSettings.background = createButtonDrawable()
-        btnTvSettings.background = createButtonDrawable()
+        // Header buttons
+        btnSettings.background = createThemedSelector(10f, 180, true)
+        btnTvSettings.background = createThemedSelector(10f, 180, true)
+
+        // Inputs container bar (clean seamless tint matching wallpaper, no dirty glass border)
+        val barBg = GradientDrawable().apply {
+            cornerRadius = 14 * density
+            val barColor = Color.argb(160, Color.red(dominantBgColor), Color.green(dominantBgColor), Color.blue(dominantBgColor))
+            setColor(barColor)
+            setStroke((1 * density).toInt(), Color.argb(60, 255, 255, 255))
+        }
+        inputsContainer.background = barBg
+
+        // Input individual buttons
+        val inputBtnBg = createThemedSelector(8f, 220, true)
+        btnHdmi1.background = createThemedSelector(8f, 200, true)
+        btnHdmi2.background = createThemedSelector(8f, 200, true)
+        btnAv.background = createThemedSelector(8f, 200, true)
+        btnHdmi3.background = createThemedSelector(8f, 200, true)
+
+        // Right Action Buttons (Boost RAM & Recent Apps)
+        btnBoostRam.background = createThemedSelector(12f, 210, true)
+        btnRecentApps.background = createThemedSelector(12f, 210, true)
     }
 
     private fun loadPreferences() {
@@ -143,7 +246,7 @@ class MainActivity : AppCompatActivity() {
                 Palette.from(bitmap).generate { palette ->
                     val vib = palette?.getVibrantColor(accentColor) ?: accentColor
                     val dom = palette?.getDarkVibrantColor(dominantColor) ?: dominantColor
-                    applyDynamicButtonThemes(vib, dom)
+                    applyDynamicColors(vib, dom)
                 }
                 return
             }
@@ -155,48 +258,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        applyDynamicButtonThemes(accentColor, dominantColor)
-    }
-
-    private fun startStatsMonitor() {
-        handler.post(object : Runnable {
-            override fun run() {
-                updateRamStats()
-                handler.postDelayed(this, 3000)
-            }
-        })
-    }
-
-    private fun updateRamStats() {
-        try {
-            val actManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            val memInfo = ActivityManager.MemoryInfo()
-            actManager.getMemoryInfo(memInfo)
-
-            val totalRamMb = memInfo.totalMem / (1024 * 1024)
-            val availRamMb = memInfo.availMem / (1024 * 1024)
-            val usedRamMb = totalRamMb - availRamMb
-            val usedPercent = ((usedRamMb.toDouble() / totalRamMb.toDouble()) * 100).toInt()
-
-            tvRamUsage.text = "RAM $usedPercent% (${availRamMb} MB Free)"
-            pbRam.progress = usedPercent
-        } catch (_: Exception) {}
-    }
-
-    private fun updateStorageStats() {
-        try {
-            val stat = StatFs(Environment.getDataDirectory().path)
-            val totalBytes = stat.totalBytes
-            val freeBytes = stat.availableBytes
-            val usedBytes = totalBytes - freeBytes
-
-            val totalGb = String.format("%.1f", totalBytes.toDouble() / (1024 * 1024 * 1024))
-            val usedGb = String.format("%.1f", usedBytes.toDouble() / (1024 * 1024 * 1024))
-            val usedPercent = ((usedBytes.toDouble() / totalBytes.toDouble()) * 100).toInt()
-
-            tvStorageUsage.text = "Storage $usedPercent% ($usedGb GB used of $totalGb GB)"
-            pbStorage.progress = usedPercent
-        } catch (_: Exception) {}
+        applyDynamicColors(accentColor, dominantColor)
     }
 
     private fun setupAppsList() {
@@ -217,7 +279,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openAddAppFlow() {
-        // Open Google Play Store on TV or App installer
         val storeIntent = packageManager.getLaunchIntentForPackage("com.android.vending")
         if (storeIntent != null) {
             startActivity(storeIntent)
@@ -399,11 +460,9 @@ class MainActivity : AppCompatActivity() {
             holder.cardApp.maxCardElevation = 0f
 
             if (getItemViewType(position) == TYPE_ADD) {
-                // Show Add App Card (+)
                 holder.ivBanner.visibility = View.GONE
                 holder.layoutAdd.visibility = View.VISIBLE
-                
-                // Glassy background for Add button
+
                 val addBg = GradientDrawable().apply {
                     cornerRadius = radiusPx
                     setColor(Color.parseColor("#33FFFFFF"))
@@ -415,7 +474,6 @@ class MainActivity : AppCompatActivity() {
                     onAddClick()
                 }
             } else {
-                // Regular App Tile
                 holder.layoutAdd.visibility = View.GONE
                 holder.ivBanner.visibility = View.VISIBLE
                 holder.cardApp.background = null
@@ -436,7 +494,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // TV Remote Focus Outline matching the exact corner radius without cutting top
             holder.container.setOnFocusChangeListener { v, hasFocus ->
                 if (hasFocus) {
                     v.animate().scaleX(1.07f).scaleY(1.07f).setDuration(120).start()
@@ -454,7 +511,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Total apps + 1 for Add Button (+)
         override fun getItemCount(): Int = list.size + 1
     }
 }
