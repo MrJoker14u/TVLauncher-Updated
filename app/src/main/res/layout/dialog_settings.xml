@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="520dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#233238"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Launcher settings"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/etName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Your Name"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#88FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Accent Color with Preview Tile -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <EditText
+            android:id="@+id/etAccentColor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="#FFC107"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#88FFFFFF"/>
+
+        <View
+            android:id="@+id/previewAccentColor"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="12dp"
+            android:background="#FFC107"/>
+    </LinearLayout>
+
+    <!-- Background Color with Preview Tile -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <EditText
+            android:id="@+id/etBgColor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="#14110F"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#88FFFFFF"/>
+
+        <View
+            android:id="@+id/previewBgColor"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="12dp"
+            android:background="#14110F"/>
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/cbAutoMatch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Auto-match colors to wallpaper"
+        android:textColor="#FFFFFF"
+        android:checked="true"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnChooseWallpaper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CHOOSE WALLPAPER"
+        android:backgroundTint="#4E585E"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/btnRemoveWallpaper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="REMOVE WALLPAPER"
+        android:backgroundTint="#4E585E"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="20dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCEL"
+            android:textColor="#80D8FF"
+            style="?android:attr/borderlessButtonStyle"/>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SAVE"
+            android:textColor="#80D8FF"
+            style="?android:attr/borderlessButtonStyle"/>
+    </LinearLayout>
+</LinearLayout>

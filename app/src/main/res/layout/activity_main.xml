@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainRootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#14110F"
+    android:padding="28dp">
+
+    <!-- Header Section (Greetings + Time + Quick Actions) -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvGreeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Good Night, Deep"
+                android:textColor="#FFFFFF"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSubGreeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Relax • Watch • Explore"
+                android:textColor="#AAAAAA"
+                android:textSize="13sp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end"
+            android:layout_marginEnd="16dp">
+
+            <TextClock
+                android:id="@+id/tcClock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="hh:mm a"
+                android:format24Hour="HH:mm"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+
+            <TextClock
+                android:id="@+id/tcDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="EEE, d MMM yyyy"
+                android:format24Hour="EEE, d MMM yyyy"
+                android:textColor="#AAAAAA"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Launcher"
+            android:textSize="11sp"
+            android:backgroundTint="#262626"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnTvSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="TV Settings"
+            android:textSize="11sp"
+            android:backgroundTint="#262626"
+            android:textColor="#FFFFFF"/>
+    </LinearLayout>
+
+    <!-- Apps RecyclerView (Full Banner Tiles, No Extra Box Padding) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvApps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal"
+        android:clipToPadding="false"
+        android:paddingVertical="10dp"/>
+
+    <!-- Bottom Left: Compact Inputs (HDMI / AV) -->
+    <LinearLayout
+        android:id="@+id/inputsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:orientation="horizontal"
+        android:background="#22FFFFFF"
+        android:paddingHorizontal="8dp"
+        android:gravity="center_vertical"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="INPUTS"
+            android:textSize="10sp"
+            android:textColor="#99FFFFFF"
+            android:layout_marginEnd="8dp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnHdmi1"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:text="HDMI1"
+            android:textSize="11sp"
+            android:backgroundTint="#333333"
+            android:layout_marginEnd="6dp"/>
+
+        <Button
+            android:id="@+id/btnHdmi2"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:text="HDMI2"
+            android:textSize="11sp"
+            android:backgroundTint="#333333"
+            android:layout_marginEnd="6dp"/>
+
+        <Button
+            android:id="@+id/btnAv"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:text="AV"
+            android:textSize="11sp"
+            android:backgroundTint="#333333"
+            android:layout_marginEnd="6dp"/>
+
+        <Button
+            android:id="@+id/btnHdmi3"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="10dp"
+            android:text="HDMI3"
+            android:textSize="11sp"
+            android:backgroundTint="#333333"/>
+    </LinearLayout>
+
+    <!-- Bottom Right: Live RAM Monitor + Storage Monitor -->
+    <LinearLayout
+        android:id="@+id/statusContainer"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#33000000"
+        android:padding="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true">
+
+        <!-- RAM Monitor -->
+        <TextView
+            android:id="@+id/tvRamUsage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RAM: --%"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <ProgressBar
+            android:id="@+id/pbRam"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="6dp"
+            android:progress="50"
+            android:progressTint="#00E5FF"/>
+
+        <!-- Storage Monitor -->
+        <TextView
+            android:id="@+id/tvStorageUsage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Storage: --%"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <ProgressBar
+            android:id="@+id/pbStorage"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="3dp"
+            android:progress="40"
+            android:progressTint="#FFC107"/>
+    </LinearLayout>
+
+</RelativeLayout>
