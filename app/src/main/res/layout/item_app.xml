@@ -4,7 +4,7 @@
     android:id="@+id/rootCardContainer"
     android:layout_width="match_parent"
     android:layout_height="105dp"
-    android:layout_margin="7dp"
+    android:layout_margin="8dp"
     android:focusable="true"
     android:clickable="true">
 
@@ -12,20 +12,24 @@
         android:id="@+id/cardApp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="6dp"
-        app:cardBackgroundColor="#212121">
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp"
+        app:cardMaxElevation="0dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="false"
+        app:cardBackgroundColor="@android:color/transparent">
 
         <ImageView
             android:id="@+id/ivAppBanner"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:padding="6dp"/>
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"/>
     </androidx.cardview.widget.CardView>
 
+    <!-- Crisp border highlight on focus -->
     <View
-        android:id="@+id/focusOverlay"
+        android:id="@+id/focusBorderView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"/>

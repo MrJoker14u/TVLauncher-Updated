@@ -98,7 +98,7 @@
             android:paddingHorizontal="16dp"/>
     </LinearLayout>
 
-    <!-- Apps Grid (5 columns per row, scrollable vertically, sleek rounded cards) -->
+    <!-- Apps Grid: Clean full bleed tiles -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvApps"
         android:layout_width="match_parent"
@@ -118,7 +118,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
-        <!-- Inputs Container: Roomy & fully legible -->
+        <!-- Inputs Container: HDMI 1, HDMI 2, AV, HDMI 3, and USB Drive! -->
         <LinearLayout
             android:id="@+id/inputsContainer"
             android:layout_width="wrap_content"
@@ -193,6 +193,22 @@
                 android:paddingHorizontal="14dp"
                 android:text="HDMI 3"
                 android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/input_btn_selector"
+                android:focusable="true"
+                android:clickable="true"
+                android:layout_marginEnd="8dp"/>
+
+            <!-- USB Input Button -->
+            <TextView
+                android:id="@+id/btnUsb"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:text="USB"
+                android:textColor="#00E5FF"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:background="@drawable/input_btn_selector"

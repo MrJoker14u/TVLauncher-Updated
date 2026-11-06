@@ -35,11 +35,11 @@
             android:textColorHint="#66FFFFFF"
             android:layout_marginBottom="14dp"/>
 
-        <!-- App Tile Corner Style (Design Customization) -->
+        <!-- App Tile Corner Style (Direct Banner Clipping) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tile Corner Style (Roundness)"
+            android:text="Banner Corner Roundness"
             android:textColor="#B0FFFFFF"
             android:textSize="12sp"
             android:layout_marginBottom="6dp"/>
@@ -50,11 +50,19 @@
             android:orientation="horizontal"
             android:layout_marginBottom="14dp">
             <RadioButton
+                android:id="@+id/rbCornerNone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sharp (0dp)"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"/>
+            <RadioButton
                 android:id="@+id/rbCornerSharp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Sharp (8dp)"
+                android:text="Slight (10dp)"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"/>
             <RadioButton
@@ -62,7 +70,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Modern (18dp)"
+                android:text="Rounded (20dp)"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:checked="true"/>
@@ -71,7 +79,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Curved (28dp)"
+                android:text="Oval (30dp)"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"/>
         </RadioGroup>
@@ -103,7 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="5 Apps (Recommended)"
+                android:text="5 Apps (Standard)"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:checked="true"/>

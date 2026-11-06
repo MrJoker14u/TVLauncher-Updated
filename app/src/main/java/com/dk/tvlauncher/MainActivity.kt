@@ -2,8 +2,10 @@ package com.dk.tvlauncher
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
@@ -43,9 +45,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvStorageUsage: TextView
     private lateinit var pbStorage: ProgressBar
     private lateinit var rvApps: RecyclerView
+    private lateinit var btnUsb: TextView
 
     private val handler = Handler(Looper.getMainLooper())
     private val PICK_IMAGE_REQUEST = 1001
+
+    private val usbReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            checkUsbConnected()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,12 +69,50 @@ class MainActivity : AppCompatActivity() {
         tvStorageUsage = findViewById(R.id.tvStorageUsage)
         pbStorage = findViewById(R.id.pbStorage)
         rvApps = findViewById(R.id.rvApps)
+        btnUsb = findViewById(R.id.btnUsb)
 
         setupButtons()
         loadPreferences()
         setupAppsList()
         updateStorageStats()
         startStatsMonitor()
+        checkUsbConnected()
+        registerUsbReceiver()
+    }
+
+    private fun registerUsbReceiver() {
+        try {
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_MEDIA_MOUNTED)
+                addAction(Intent.ACTION_MEDIA_REMOVED)
+                addAction(Intent.ACTION_MEDIA_UNMOUNTED)
+                addDataScheme("file")
+            }
+            registerReceiver(usbReceiver, filter)
+        } catch (_: Exception) {}
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            unregisterReceiver(usbReceiver)
+        } catch (_: Exception) {}
+    }
+
+    private fun checkUsbConnected() {
+        try {
+            val dirs = getExternalFilesDirs(null)
+            val hasUsb = dirs.size > 1
+            if (hasUsb) {
+                btnUsb.text = "● USB (Ready)"
+                btnUsb.setTextColor(Color.parseColor("#00E5FF"))
+            } else {
+                btnUsb.text = "USB"
+                btnUsb.setTextColor(Color.parseColor("#FFFFFF"))
+            }
+        } catch (_: Exception) {
+            btnUsb.text = "USB"
+        }
     }
 
     private fun setupButtons() {
@@ -85,10 +132,32 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnHdmi2).setOnClickListener { openInput("HDMI 2") }
         findViewById<TextView>(R.id.btnAv).setOnClickListener { openInput("AV") }
         findViewById<TextView>(R.id.btnHdmi3).setOnClickListener { openInput("HDMI 3") }
+        btnUsb.setOnClickListener { openUsbDrive() }
     }
 
     private fun openInput(source: String) {
         Toast.makeText(this, "Switching to $source...", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openUsbDrive() {
+        // Try to open external file manager or system storage
+        val intentList = listOf(
+            Intent(Intent.ACTION_VIEW).apply { setDataAndType(Uri.parse("content://media/external/file"), "*/*") },
+            packageManager.getLaunchIntentForPackage("com.alphainventor.filemanager"),
+            packageManager.getLaunchIntentForPackage("com.lonelycatgames.Xplore"),
+            packageManager.getLaunchIntentForPackage("com.estrongs.android.pop"),
+            Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+        )
+
+        for (intent in intentList) {
+            if (intent != null) {
+                try {
+                    startActivity(intent)
+                    return
+                } catch (_: Exception) {}
+            }
+        }
+        Toast.makeText(this, "USB Storage connected. Open File Manager to view.", Toast.LENGTH_SHORT).show()
     }
 
     private fun loadPreferences() {
@@ -160,9 +229,8 @@ class MainActivity : AppCompatActivity() {
         val filteredList = allApps.filter { it.activityInfo.packageName != packageName }
 
         val columns = prefs.getInt("grid_columns", 5)
-        val cornerRadiusDp = prefs.getInt("corner_radius", 18)
+        val cornerRadiusDp = prefs.getInt("corner_radius", 20)
 
-        // 5 apps per row in a clean 2D Grid (Top 5, then Bottom 5)
         rvApps.layoutManager = GridLayoutManager(this, columns)
         rvApps.adapter = AppsAdapter(this, filteredList, pm, cornerRadiusDp)
     }
@@ -185,10 +253,11 @@ class MainActivity : AppCompatActivity() {
         etBg.setText(prefs.getString("bg_color", "#14110F"))
         cbAuto.isChecked = prefs.getBoolean("auto_match", true)
 
-        val curRadius = prefs.getInt("corner_radius", 18)
+        val curRadius = prefs.getInt("corner_radius", 20)
         when (curRadius) {
-            8 -> dialogView.findViewById<RadioButton>(R.id.rbCornerSharp).isChecked = true
-            28 -> dialogView.findViewById<RadioButton>(R.id.rbCornerOval).isChecked = true
+            0 -> dialogView.findViewById<RadioButton>(R.id.rbCornerNone).isChecked = true
+            10 -> dialogView.findViewById<RadioButton>(R.id.rbCornerSharp).isChecked = true
+            30 -> dialogView.findViewById<RadioButton>(R.id.rbCornerOval).isChecked = true
             else -> dialogView.findViewById<RadioButton>(R.id.rbCornerRounded).isChecked = true
         }
 
@@ -228,9 +297,10 @@ class MainActivity : AppCompatActivity() {
 
         dialogView.findViewById<Button>(R.id.btnSave).setOnClickListener {
             val selectedRadius = when (rgCorners.checkedRadioButtonId) {
-                R.id.rbCornerSharp -> 8
-                R.id.rbCornerOval -> 28
-                else -> 18
+                R.id.rbCornerNone -> 0
+                R.id.rbCornerSharp -> 10
+                R.id.rbCornerOval -> 30
+                else -> 20
             }
             val selectedCols = when (rgCols.checkedRadioButtonId) {
                 R.id.rbCol4 -> 4
@@ -305,6 +375,7 @@ class MainActivity : AppCompatActivity() {
             val container: FrameLayout = view.findViewById(R.id.rootCardContainer)
             val cardApp: CardView = view.findViewById(R.id.cardApp)
             val ivBanner: ImageView = view.findViewById(R.id.ivAppBanner)
+            val focusBorderView: View = view.findViewById(R.id.focusBorderView)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -315,7 +386,11 @@ class MainActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val density = context.resources.displayMetrics.density
             val radiusPx = (cornerRadiusDp * density)
+            
+            // Apply exact corner radius and make card clip directly to bounds
             holder.cardApp.radius = radiusPx
+            holder.cardApp.cardElevation = 0f
+            holder.cardApp.maxCardElevation = 0f
 
             val item = list[position]
             val banner = item.activityInfo.loadBanner(pm)
@@ -325,19 +400,20 @@ class MainActivity : AppCompatActivity() {
                 holder.ivBanner.setImageDrawable(item.loadIcon(pm))
             }
 
-            // TV Remote Focus smooth zoom & outline
+            // TV Remote Focus Outline matching the exact corner radius
             holder.container.setOnFocusChangeListener { v, hasFocus ->
                 if (hasFocus) {
-                    v.animate().scaleX(1.08f).scaleY(1.08f).setDuration(150).start()
+                    v.animate().scaleX(1.08f).scaleY(1.08f).setDuration(140).start()
                     val border = GradientDrawable().apply {
                         cornerRadius = radiusPx
-                        setStroke((3 * density).toInt(), Color.WHITE)
-                        setColor(Color.parseColor("#33FFFFFF"))
+                        setStroke((3.5f * density).toInt(), Color.WHITE)
+                        setColor(Color.TRANSPARENT)
                     }
-                    holder.cardApp.foreground = border
+                    holder.focusBorderView.background = border
+                    holder.focusBorderView.visibility = View.VISIBLE
                 } else {
-                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()
-                    holder.cardApp.foreground = null
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(140).start()
+                    holder.focusBorderView.visibility = View.GONE
                 }
             }
 
