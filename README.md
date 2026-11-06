@@ -1,2 +1,2 @@
-# TVLauncher v6
-Wallpaper Adaptive Inputs, RAM Boost Button, Recent Apps Switcher
+# TVLauncher v8 Final
+Fixed Icon Stretching (Aspect Ratio Preserved), Added Quick Wi-Fi & Bluetooth Buttons, Sub-1MB APK Size

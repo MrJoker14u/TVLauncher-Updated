@@ -14,12 +14,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,13 +34,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mainRootLayout: RelativeLayout
     private lateinit var tvGreeting: TextView
     private lateinit var rvApps: RecyclerView
+    private lateinit var btnWifi: TextView
+    private lateinit var btnBluetooth: TextView
     private lateinit var btnSettings: TextView
     private lateinit var btnTvSettings: TextView
-    private lateinit var inputsContainer: LinearLayout
-    private lateinit var btnHdmi1: TextView
-    private lateinit var btnHdmi2: TextView
-    private lateinit var btnAv: TextView
-    private lateinit var btnHdmi3: TextView
+    private lateinit var btnInputsMenu: TextView
     private lateinit var btnBoostRam: TextView
     private lateinit var btnRecentApps: TextView
 
@@ -60,13 +53,11 @@ class MainActivity : AppCompatActivity() {
         mainRootLayout = findViewById(R.id.mainRootLayout)
         tvGreeting = findViewById(R.id.tvGreeting)
         rvApps = findViewById(R.id.rvApps)
+        btnWifi = findViewById(R.id.btnWifi)
+        btnBluetooth = findViewById(R.id.btnBluetooth)
         btnSettings = findViewById(R.id.btnSettings)
         btnTvSettings = findViewById(R.id.btnTvSettings)
-        inputsContainer = findViewById(R.id.inputsContainer)
-        btnHdmi1 = findViewById(R.id.btnHdmi1)
-        btnHdmi2 = findViewById(R.id.btnHdmi2)
-        btnAv = findViewById(R.id.btnAv)
-        btnHdmi3 = findViewById(R.id.btnHdmi3)
+        btnInputsMenu = findViewById(R.id.btnInputsMenu)
         btnBoostRam = findViewById(R.id.btnBoostRam)
         btnRecentApps = findViewById(R.id.btnRecentApps)
 
@@ -76,9 +67,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupButtons() {
-        btnSettings.setOnClickListener {
-            showSettingsDialog()
-        }
+        // Direct Wi-Fi shortcut
+        btnWifi.setOnClickListener { openWifiSettings() }
+
+        // Direct Bluetooth shortcut
+        btnBluetooth.setOnClickListener { openBluetoothSettings() }
+
+        btnSettings.setOnClickListener { showSettingsDialog() }
 
         btnTvSettings.setOnClickListener {
             try {
@@ -88,24 +83,188 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnHdmi1.setOnClickListener { openInput("HDMI 1") }
-        btnHdmi2.setOnClickListener { openInput("HDMI 2") }
-        btnAv.setOnClickListener { openInput("AV") }
-        btnHdmi3.setOnClickListener { openInput("HDMI 3") }
+        btnInputsMenu.setOnClickListener { showInputsDialog() }
+        btnBoostRam.setOnClickListener { performRamOptimization() }
+        btnRecentApps.setOnClickListener { showRecentAppsDialog() }
+    }
 
-        // Boost RAM / Memory Optimizer
-        btnBoostRam.setOnClickListener {
-            performRamOptimization()
+    private fun openWifiSettings() {
+        val intents = listOf(
+            Intent(Settings.ACTION_WIFI_SETTINGS),
+            Intent("android.settings.WIFI_SETTINGS"),
+            Intent(Settings.ACTION_WIRELESS_SETTINGS)
+        )
+        for (intent in intents) {
+            try {
+                startActivity(intent)
+                return
+            } catch (_: Exception) {}
         }
-
-        // Recent Apps / Task Manager
-        btnRecentApps.setOnClickListener {
-            openRecentApps()
+        try {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        } catch (_: Exception) {
+            Toast.makeText(this, "Opening Wi-Fi...", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun openInput(source: String) {
-        Toast.makeText(this, "Switching to $source...", Toast.LENGTH_SHORT).show()
+    private fun openBluetoothSettings() {
+        val intents = listOf(
+            Intent(Settings.ACTION_BLUETOOTH_SETTINGS),
+            Intent("android.settings.BLUETOOTH_SETTINGS"),
+            Intent("com.android.tv.settings.accessories.AccessoriesActivity")
+        )
+        for (intent in intents) {
+            try {
+                startActivity(intent)
+                return
+            } catch (_: Exception) {}
+        }
+        try {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        } catch (_: Exception) {
+            Toast.makeText(this, "Opening Bluetooth...", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showInputsDialog() {
+        val inputs = arrayOf("HDMI 1", "HDMI 2", "AV", "HDMI 3")
+        AlertDialog.Builder(this)
+            .setTitle("Select Input Source")
+            .setItems(inputs) { _, which ->
+                val selected = inputs[which]
+                Toast.makeText(this, "Switching to $selected...", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("CANCEL", null)
+            .show()
+    }
+
+    private fun showRecentAppsDialog() {
+        val actManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val pm = packageManager
+        val runningTasks = actManager.getRunningTasks(15) ?: emptyList()
+
+        val recentApps = mutableListOf<ResolveInfo>()
+        for (task in runningTasks) {
+            val pkg = task.topActivity?.packageName ?: continue
+            if (pkg != packageName) {
+                val launchIntent = pm.getLaunchIntentForPackage(pkg)
+                if (launchIntent != null) {
+                    val info = pm.resolveActivity(launchIntent, 0)
+                    if (info != null && !recentApps.any { it.activityInfo.packageName == pkg }) {
+                        recentApps.add(info)
+                    }
+                }
+            }
+        }
+
+        val dialogView = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(40, 30, 40, 30)
+            setBackgroundColor(Color.parseColor("#1B2226"))
+        }
+
+        val titleTv = TextView(this).apply {
+            text = "Active Background Tasks (${recentApps.size})"
+            textSize = 18f
+            setTextColor(Color.WHITE)
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, 20)
+        }
+        dialogView.addView(titleTv)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        if (recentApps.isEmpty()) {
+            val emptyTv = TextView(this).apply {
+                text = "No active background apps. System is fully optimized!"
+                textSize = 14f
+                setTextColor(Color.parseColor("#B0FFFFFF"))
+                setPadding(0, 20, 0, 20)
+            }
+            dialogView.addView(emptyTv)
+        } else {
+            val listLayout = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+            }
+
+            for (app in recentApps) {
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    setPadding(16, 14, 16, 14)
+                    gravity = android.view.Gravity.CENTER_VERTICAL
+                    isFocusable = true
+                    isClickable = true
+                    background = createButtonSelector(Color.parseColor("#00E5FF"), Color.parseColor("#25FFFFFF"), 8f)
+                    val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    lp.setMargins(0, 4, 0, 4)
+                    layoutParams = lp
+                }
+
+                val iconIv = ImageView(this).apply {
+                    val density = resources.displayMetrics.density
+                    val size = (36 * density).toInt()
+                    layoutParams = LinearLayout.LayoutParams(size, size).apply { marginEnd = (12 * density).toInt() }
+                    setImageDrawable(app.loadIcon(pm))
+                }
+
+                val nameTv = TextView(this).apply {
+                    text = app.loadLabel(pm)
+                    setTextColor(Color.WHITE)
+                    textSize = 14f
+                    setTypeface(null, android.graphics.Typeface.BOLD)
+                    layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                }
+
+                row.addView(iconIv)
+                row.addView(nameTv)
+
+                row.setOnClickListener {
+                    val launchIntent = pm.getLaunchIntentForPackage(app.activityInfo.packageName)
+                    if (launchIntent != null) {
+                        dialog.dismiss()
+                        startActivity(launchIntent)
+                    }
+                }
+
+                listLayout.addView(row)
+            }
+            dialogView.addView(listLayout)
+        }
+
+        val btnRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.END
+            setPadding(0, 24, 0, 0)
+        }
+
+        val btnClearAll = Button(this).apply {
+            text = "⚡ CLEAR ALL & CLOSE"
+            setTextColor(Color.parseColor("#FFC107"))
+            setBackgroundColor(Color.TRANSPARENT)
+            setOnClickListener {
+                for (app in recentApps) {
+                    actManager.killBackgroundProcesses(app.activityInfo.packageName)
+                }
+                System.gc()
+                Toast.makeText(this@MainActivity, "Cleaned all background apps!", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+        }
+
+        val btnClose = Button(this).apply {
+            text = "CLOSE"
+            setTextColor(Color.parseColor("#00E5FF"))
+            setBackgroundColor(Color.TRANSPARENT)
+            setOnClickListener { dialog.dismiss() }
+        }
+
+        btnRow.addView(btnClearAll)
+        btnRow.addView(btnClose)
+        dialogView.addView(btnRow)
+
+        dialog.show()
     }
 
     private fun performRamOptimization() {
@@ -114,7 +273,6 @@ class MainActivity : AppCompatActivity() {
             val memBefore = ActivityManager.MemoryInfo()
             actManager.getMemoryInfo(memBefore)
 
-            // Kill background processes of other apps
             val runningApps = actManager.runningAppProcesses ?: emptyList()
             for (app in runningApps) {
                 if (app.pkgList != null) {
@@ -147,84 +305,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun openRecentApps() {
-        // Try multiple methods to invoke recent apps screen on Android TV
-        try {
-            // Method 1: System intent for Recents
-            val intent = Intent("android.intent.action.MAIN")
-            intent.setClassName("com.android.systemui", "com.android.systemui.recents.RecentsActivity")
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-            return
-        } catch (_: Exception) {}
-
-        try {
-            // Method 2: Leanback recents / Quick settings
-            val intent = Intent("com.android.systemui.action.RECENTS")
-            startActivity(intent)
-            return
-        } catch (_: Exception) {}
-
-        try {
-            // Method 3: Accessibility / Global Action via Task Switcher intent
-            val intent = Intent(Intent.ACTION_ALL_APPS)
-            startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(this, "Tip: Long-press HOME button on remote for Recent Apps", Toast.LENGTH_LONG).show()
+    private fun createButtonSelector(accentColor: Int, normalBgColor: Int, radiusDp: Float): StateListDrawable {
+        val density = resources.displayMetrics.density
+        val radius = radiusDp * density
+        val focused = GradientDrawable().apply {
+            cornerRadius = radius
+            setColor(accentColor)
+            setStroke((2.5f * density).toInt(), Color.WHITE)
+        }
+        val normal = GradientDrawable().apply {
+            cornerRadius = radius
+            setColor(normalBgColor)
+            setStroke((1 * density).toInt(), Color.argb(80, 255, 255, 255))
+        }
+        return StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_focused), focused)
+            addState(intArrayOf(), normal)
         }
     }
 
     private fun applyDynamicColors(accentColor: Int, dominantBgColor: Int) {
-        val density = resources.displayMetrics.density
+        val normalTint = Color.argb(190, Color.red(dominantBgColor), Color.green(dominantBgColor), Color.blue(dominantBgColor))
 
-        // Helper for interactive button state list
-        fun createThemedSelector(radiusDp: Float, normalAlpha: Int, isAccentFocus: Boolean = false): StateListDrawable {
-            val radius = radiusDp * density
-            val focused = GradientDrawable().apply {
-                cornerRadius = radius
-                setColor(if (isAccentFocus) accentColor else Color.WHITE)
-                setStroke((2.5f * density).toInt(), if (isAccentFocus) Color.WHITE else accentColor)
-            }
-            val normal = GradientDrawable().apply {
-                cornerRadius = radius
-                val tinted = Color.argb(
-                    normalAlpha,
-                    Color.red(dominantBgColor),
-                    Color.green(dominantBgColor),
-                    Color.blue(dominantBgColor)
-                )
-                setColor(tinted)
-                setStroke((1 * density).toInt(), Color.argb(80, 255, 255, 255))
-            }
-            return StateListDrawable().apply {
-                addState(intArrayOf(android.R.attr.state_focused), focused)
-                addState(intArrayOf(), normal)
-            }
-        }
-
-        // Header buttons
-        btnSettings.background = createThemedSelector(10f, 180, true)
-        btnTvSettings.background = createThemedSelector(10f, 180, true)
-
-        // Inputs container bar (clean seamless tint matching wallpaper, no dirty glass border)
-        val barBg = GradientDrawable().apply {
-            cornerRadius = 14 * density
-            val barColor = Color.argb(160, Color.red(dominantBgColor), Color.green(dominantBgColor), Color.blue(dominantBgColor))
-            setColor(barColor)
-            setStroke((1 * density).toInt(), Color.argb(60, 255, 255, 255))
-        }
-        inputsContainer.background = barBg
-
-        // Input individual buttons
-        val inputBtnBg = createThemedSelector(8f, 220, true)
-        btnHdmi1.background = createThemedSelector(8f, 200, true)
-        btnHdmi2.background = createThemedSelector(8f, 200, true)
-        btnAv.background = createThemedSelector(8f, 200, true)
-        btnHdmi3.background = createThemedSelector(8f, 200, true)
-
-        // Right Action Buttons (Boost RAM & Recent Apps)
-        btnBoostRam.background = createThemedSelector(12f, 210, true)
-        btnRecentApps.background = createThemedSelector(12f, 210, true)
+        btnWifi.background = createButtonSelector(accentColor, normalTint, 10f)
+        btnBluetooth.background = createButtonSelector(accentColor, normalTint, 10f)
+        btnSettings.background = createButtonSelector(accentColor, normalTint, 10f)
+        btnTvSettings.background = createButtonSelector(accentColor, normalTint, 10f)
+        btnInputsMenu.background = createButtonSelector(accentColor, normalTint, 12f)
+        btnBoostRam.background = createButtonSelector(accentColor, normalTint, 12f)
+        btnRecentApps.background = createButtonSelector(accentColor, normalTint, 12f)
     }
 
     private fun loadPreferences() {
@@ -236,7 +345,7 @@ class MainActivity : AppCompatActivity() {
         tvGreeting.text = "Good Night, $userName"
 
         var accentColor = try { Color.parseColor(accentColorHex) } catch (_: Exception) { Color.parseColor("#00E5FF") }
-        var dominantColor = try { Color.parseColor(bgColor) } catch (_: Exception) { Color.parseColor("#1E282D") }
+        var dominantColor = try { Color.parseColor(bgColor) } catch (_: Exception) { Color.parseColor("#1B2226") }
 
         if (wallpaperPath != null && File(wallpaperPath).exists()) {
             val bitmap = BitmapFactory.decodeFile(wallpaperPath)
@@ -295,10 +404,6 @@ class MainActivity : AppCompatActivity() {
     private fun showSettingsDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_settings, null)
         val etName = dialogView.findViewById<EditText>(R.id.etName)
-        val etAccent = dialogView.findViewById<EditText>(R.id.etAccentColor)
-        val previewAccent = dialogView.findViewById<View>(R.id.previewAccentColor)
-        val etBg = dialogView.findViewById<EditText>(R.id.etBgColor)
-        val previewBg = dialogView.findViewById<View>(R.id.previewBgColor)
         val cbAuto = dialogView.findViewById<CheckBox>(R.id.cbAutoMatch)
         val btnChoose = dialogView.findViewById<Button>(R.id.btnChooseWallpaper)
         val btnRemove = dialogView.findViewById<Button>(R.id.btnRemoveWallpaper)
@@ -306,9 +411,26 @@ class MainActivity : AppCompatActivity() {
         val rgCols = dialogView.findViewById<RadioGroup>(R.id.rgColumns)
 
         etName.setText(prefs.getString("user_name", "Deep"))
-        etAccent.setText(prefs.getString("accent_color", "#00E5FF"))
-        etBg.setText(prefs.getString("bg_color", "#14110F"))
         cbAuto.isChecked = prefs.getBoolean("auto_match", true)
+
+        var selectedAccent = prefs.getString("accent_color", "#00E5FF") ?: "#00E5FF"
+
+        val colorsMap = mapOf(
+            R.id.colorCyan to "#00E5FF",
+            R.id.colorGold to "#FFC107",
+            R.id.colorGreen to "#00E676",
+            R.id.colorPurple to "#D500F9",
+            R.id.colorOrange to "#FF6D00",
+            R.id.colorRed to "#FF1744"
+        )
+
+        for ((viewId, hex) in colorsMap) {
+            dialogView.findViewById<View>(viewId).setOnClickListener {
+                selectedAccent = hex
+                cbAuto.isChecked = false
+                Toast.makeText(this, "Selected theme color!", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         val curRadius = prefs.getInt("corner_radius", 20)
         when (curRadius) {
@@ -325,14 +447,6 @@ class MainActivity : AppCompatActivity() {
             else -> dialogView.findViewById<RadioButton>(R.id.rbCol5).isChecked = true
         }
 
-        try {
-            previewAccent.setBackgroundColor(Color.parseColor(etAccent.text.toString()))
-            previewBg.setBackgroundColor(Color.parseColor(etBg.text.toString()))
-        } catch (_: Exception) {}
-
-        setupWatcher(etAccent, previewAccent)
-        setupWatcher(etBg, previewBg)
-
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
@@ -348,9 +462,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Wallpaper removed", Toast.LENGTH_SHORT).show()
         }
 
-        dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {
-            dialog.dismiss()
-        }
+        dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener { dialog.dismiss() }
 
         dialogView.findViewById<Button>(R.id.btnSave).setOnClickListener {
             val selectedRadius = when (rgCorners.checkedRadioButtonId) {
@@ -367,8 +479,7 @@ class MainActivity : AppCompatActivity() {
 
             prefs.edit()
                 .putString("user_name", etName.text.toString().trim())
-                .putString("accent_color", etAccent.text.toString().trim())
-                .putString("bg_color", etBg.text.toString().trim())
+                .putString("accent_color", selectedAccent)
                 .putBoolean("auto_match", cbAuto.isChecked)
                 .putInt("corner_radius", selectedRadius)
                 .putInt("grid_columns", selectedCols)
@@ -380,21 +491,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         dialog.show()
-    }
-
-    private fun setupWatcher(editText: EditText, preview: View) {
-        editText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val str = s?.toString()?.trim() ?: ""
-                if (str.matches(Regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"))) {
-                    try {
-                        preview.setBackgroundColor(Color.parseColor(str))
-                    } catch (_: Exception) {}
-                }
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -470,20 +566,31 @@ class MainActivity : AppCompatActivity() {
                 }
                 holder.cardApp.background = addBg
 
-                holder.container.setOnClickListener {
-                    onAddClick()
-                }
+                holder.container.setOnClickListener { onAddClick() }
             } else {
                 holder.layoutAdd.visibility = View.GONE
                 holder.ivBanner.visibility = View.VISIBLE
-                holder.cardApp.background = null
 
                 val item = list[position]
                 val banner = item.activityInfo.loadBanner(pm)
+                
                 if (banner != null) {
+                    // True widescreen Leanback banner: Preserve aspect & crop cleanly into rounded card
                     holder.ivBanner.setImageDrawable(banner)
+                    holder.ivBanner.scaleType = ImageView.ScaleType.CENTER_CROP
+                    holder.ivBanner.setPadding(0, 0, 0, 0)
+                    holder.cardApp.background = null
                 } else {
+                    // Square/Portrait App Icon: DO NOT STRETCH! Keep original aspect ratio in center with nice background card
                     holder.ivBanner.setImageDrawable(item.loadIcon(pm))
+                    holder.ivBanner.scaleType = ImageView.ScaleType.FIT_CENTER
+                    val p = (12 * density).toInt()
+                    holder.ivBanner.setPadding(p, p, p, p)
+                    val iconBg = GradientDrawable().apply {
+                        cornerRadius = radiusPx
+                        setColor(Color.parseColor("#22282C"))
+                    }
+                    holder.cardApp.background = iconBg
                 }
 
                 holder.container.setOnClickListener {

@@ -9,7 +9,7 @@
     android:clipToPadding="false"
     android:paddingStart="40dp"
     android:paddingEnd="40dp"
-    android:paddingTop="28dp"
+    android:paddingTop="26dp"
     android:paddingBottom="24dp">
 
     <!-- Top Header -->
@@ -43,7 +43,7 @@
                 android:text="Relax • Watch • Explore"
                 android:textColor="#E0E0E0"
                 android:textSize="14sp"
-                android:layout_marginTop="3dp"/>
+                android:layout_marginTop="2dp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="end"
-            android:layout_marginEnd="20dp">
+            android:layout_marginEnd="16dp">
 
             <TextClock
                 android:id="@+id/tcClock"
@@ -60,7 +60,7 @@
                 android:format12Hour="hh:mm a"
                 android:format24Hour="HH:mm"
                 android:textColor="#FFFFFF"
-                android:textSize="24sp"
+                android:textSize="22sp"
                 android:fontFamily="sans-serif-medium"
                 android:textStyle="bold"/>
 
@@ -74,10 +74,41 @@
                 android:textSize="12sp"/>
         </LinearLayout>
 
+        <!-- Direct Wi-Fi Quick Button -->
+        <TextView
+            android:id="@+id/btnWifi"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:text="📶 WI-FI"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:focusable="true"
+            android:clickable="true"
+            android:paddingHorizontal="14dp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Direct Bluetooth Quick Button -->
+        <TextView
+            android:id="@+id/btnBluetooth"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:text="ᛒ BLUETOOTH"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:focusable="true"
+            android:clickable="true"
+            android:paddingHorizontal="14dp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Launcher Settings -->
         <TextView
             android:id="@+id/btnSettings"
             android:layout_width="wrap_content"
-            android:layout_height="38dp"
+            android:layout_height="36dp"
             android:gravity="center"
             android:text="LAUNCHER"
             android:textSize="12sp"
@@ -85,13 +116,14 @@
             android:textColor="#FFFFFF"
             android:focusable="true"
             android:clickable="true"
-            android:paddingHorizontal="18dp"
-            android:layout_marginEnd="10dp"/>
+            android:paddingHorizontal="14dp"
+            android:layout_marginEnd="8dp"/>
 
+        <!-- TV Settings -->
         <TextView
             android:id="@+id/btnTvSettings"
             android:layout_width="wrap_content"
-            android:layout_height="38dp"
+            android:layout_height="36dp"
             android:gravity="center"
             android:text="TV SETTINGS"
             android:textSize="12sp"
@@ -99,7 +131,7 @@
             android:textColor="#FFFFFF"
             android:focusable="true"
             android:clickable="true"
-            android:paddingHorizontal="18dp"/>
+            android:paddingHorizontal="14dp"/>
     </LinearLayout>
 
     <!-- Apps Grid: Clean full bleed tiles -->
@@ -117,108 +149,45 @@
         android:paddingBottom="12dp"
         android:scrollbars="none"/>
 
-    <!-- Bottom Container (Clean Inputs + Quick Actions) -->
+    <!-- Bottom Container (Single Inputs Button + Quick Action Buttons) -->
     <RelativeLayout
         android:id="@+id/bottomBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
-        <!-- Inputs Container: Adaptive Wallpaper-matched Pill Bar -->
-        <LinearLayout
-            android:id="@+id/inputsContainer"
+        <!-- Single Neat Inputs Button (Clicking opens Popup selector) -->
+        <TextView
+            android:id="@+id/btnInputsMenu"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:gravity="center_vertical"
+            android:layout_height="38dp"
+            android:gravity="center"
+            android:paddingHorizontal="20dp"
+            android:text="📺 INPUT SOURCE ▾"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:focusable="true"
+            android:clickable="true"
             android:layout_alignParentStart="true"
-            android:layout_centerVertical="true">
+            android:layout_centerVertical="true"/>
 
-            <TextView
-                android:id="@+id/tvInputsTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="INPUTS"
-                android:textSize="11sp"
-                android:textColor="#D0FFFFFF"
-                android:textStyle="bold"
-                android:letterSpacing="0.08"
-                android:layout_marginEnd="12dp"/>
-
-            <TextView
-                android:id="@+id/btnHdmi1"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:gravity="center"
-                android:paddingHorizontal="14dp"
-                android:text="HDMI 1"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:focusable="true"
-                android:clickable="true"
-                android:layout_marginEnd="8dp"/>
-
-            <TextView
-                android:id="@+id/btnHdmi2"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:gravity="center"
-                android:paddingHorizontal="14dp"
-                android:text="HDMI 2"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:focusable="true"
-                android:clickable="true"
-                android:layout_marginEnd="8dp"/>
-
-            <TextView
-                android:id="@+id/btnAv"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:gravity="center"
-                android:paddingHorizontal="14dp"
-                android:text="AV"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:focusable="true"
-                android:clickable="true"
-                android:layout_marginEnd="8dp"/>
-
-            <TextView
-                android:id="@+id/btnHdmi3"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:gravity="center"
-                android:paddingHorizontal="14dp"
-                android:text="HDMI 3"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:focusable="true"
-                android:clickable="true"/>
-        </LinearLayout>
-
-        <!-- Right Side: Clean RAM & Recent Apps Action Buttons -->
+        <!-- Right Side: Boost RAM & Recent Apps Actions -->
         <LinearLayout
             android:id="@+id/actionsContainer"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
+            android:layout_height="38dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true">
 
-            <!-- Boost / Clean RAM Button -->
             <TextView
                 android:id="@+id/btnBoostRam"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="38dp"
                 android:gravity="center"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="18dp"
                 android:text="⚡ BOOST RAM"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
@@ -227,13 +196,12 @@
                 android:clickable="true"
                 android:layout_marginEnd="10dp"/>
 
-            <!-- Recent Apps / Task Manager Button -->
             <TextView
                 android:id="@+id/btnRecentApps"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="38dp"
                 android:gravity="center"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="18dp"
                 android:text="▢ RECENT APPS"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"

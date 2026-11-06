@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="540dp"
     android:layout_height="wrap_content"
-    android:background="#1E282D"
+    android:background="#1B2226"
     android:padding="24dp">
 
     <LinearLayout
@@ -35,7 +35,7 @@
             android:textColorHint="#66FFFFFF"
             android:layout_marginBottom="14dp"/>
 
-        <!-- App Tile Corner Style -->
+        <!-- Corner Style -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,7 +84,7 @@
                 android:textSize="12sp"/>
         </RadioGroup>
 
-        <!-- Grid Layout Columns -->
+        <!-- Apps per row -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -125,62 +125,76 @@
                 android:textSize="12sp"/>
         </RadioGroup>
 
-        <!-- Accent Color with Preview -->
+        <!-- Visual Accent Color Picker Palette -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Accent Color Hex"
+            android:text="Select Accent Theme Color (Click to Pick)"
             android:textColor="#B0FFFFFF"
-            android:textSize="12sp"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/etAccentColor"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="#00E5FF"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#66FFFFFF"/>
-            <View
-                android:id="@+id/previewAccentColor"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="12dp"
-                android:background="#00E5FF"/>
-        </LinearLayout>
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp"/>
 
-        <!-- Background Color with Preview -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Background Color Hex"
-            android:textColor="#B0FFFFFF"
-            android:textSize="12sp"/>
         <LinearLayout
+            android:id="@+id/paletteColorsRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
-            <EditText
-                android:id="@+id/etBgColor"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="#14110F"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#66FFFFFF"/>
+            android:layout_marginBottom="14dp">
+
             <View
-                android:id="@+id/previewBgColor"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="12dp"
-                android:background="#14110F"/>
+                android:id="@+id/colorCyan"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="#00E5FF"
+                android:focusable="true"
+                android:clickable="true"/>
+            <View
+                android:id="@+id/colorGold"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="#FFC107"
+                android:focusable="true"
+                android:clickable="true"/>
+            <View
+                android:id="@+id/colorGreen"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="#00E676"
+                android:focusable="true"
+                android:clickable="true"/>
+            <View
+                android:id="@+id/colorPurple"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="#D500F9"
+                android:focusable="true"
+                android:clickable="true"/>
+            <View
+                android:id="@+id/colorOrange"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="#FF6D00"
+                android:focusable="true"
+                android:clickable="true"/>
+            <View
+                android:id="@+id/colorRed"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:background="#FF1744"
+                android:focusable="true"
+                android:clickable="true"/>
         </LinearLayout>
 
         <CheckBox
