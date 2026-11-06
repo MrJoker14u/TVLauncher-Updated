@@ -1,2 +1,2 @@
-# TVLauncher Custom
-Clean Leanback Android TV Launcher with RAM & Storage Monitor, Wallpaper Matching, and Full App Banner Tiles.
+# TVLauncher v3
+Grid Layout (5x2), Custom Shapes & Roundness, Glass Inputs Bar, RAM & Wallpaper Matching

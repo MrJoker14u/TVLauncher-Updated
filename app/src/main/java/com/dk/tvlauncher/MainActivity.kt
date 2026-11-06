@@ -7,11 +7,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -29,7 +28,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.palette.graphics.Palette
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 import java.io.FileOutputStream
@@ -75,14 +74,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnTvSettings).setOnClickListener {
-            startActivity(Intent(Settings.ACTION_SETTINGS))
+            try {
+                startActivity(Intent(Settings.ACTION_SETTINGS))
+            } catch (e: Exception) {
+                Toast.makeText(this, "Opening Settings...", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        // Inputs
-        findViewById<Button>(R.id.btnHdmi1).setOnClickListener { openInput("HDMI1") }
-        findViewById<Button>(R.id.btnHdmi2).setOnClickListener { openInput("HDMI2") }
-        findViewById<Button>(R.id.btnAv).setOnClickListener { openInput("AV") }
-        findViewById<Button>(R.id.btnHdmi3).setOnClickListener { openInput("HDMI3") }
+        findViewById<TextView>(R.id.btnHdmi1).setOnClickListener { openInput("HDMI 1") }
+        findViewById<TextView>(R.id.btnHdmi2).setOnClickListener { openInput("HDMI 2") }
+        findViewById<TextView>(R.id.btnAv).setOnClickListener { openInput("AV") }
+        findViewById<TextView>(R.id.btnHdmi3).setOnClickListener { openInput("HDMI 3") }
     }
 
     private fun openInput(source: String) {
@@ -91,7 +93,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadPreferences() {
         val userName = prefs.getString("user_name", "Deep") ?: "Deep"
-        val accentColor = prefs.getString("accent_color", "#FFC107") ?: "#FFC107"
         val bgColor = prefs.getString("bg_color", "#14110F") ?: "#14110F"
         val wallpaperPath = prefs.getString("wallpaper_path", null)
 
@@ -104,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 mainRootLayout.setBackgroundColor(Color.parseColor(bgColor))
             } catch (e: Exception) {
-                mainRootLayout.setBackgroundColor(Color.BLACK)
+                mainRootLayout.setBackgroundColor(Color.parseColor("#14110F"))
             }
         }
     }
@@ -129,7 +130,7 @@ class MainActivity : AppCompatActivity() {
             val usedRamMb = totalRamMb - availRamMb
             val usedPercent = ((usedRamMb.toDouble() / totalRamMb.toDouble()) * 100).toInt()
 
-            tvRamUsage.text = "RAM  $usedPercent% (${availRamMb} MB Free)"
+            tvRamUsage.text = "RAM $usedPercent% (${availRamMb} MB Free)"
             pbRam.progress = usedPercent
         } catch (_: Exception) {}
     }
@@ -145,7 +146,7 @@ class MainActivity : AppCompatActivity() {
             val usedGb = String.format("%.1f", usedBytes.toDouble() / (1024 * 1024 * 1024))
             val usedPercent = ((usedBytes.toDouble() / totalBytes.toDouble()) * 100).toInt()
 
-            tvStorageUsage.text = "Storage  $usedPercent% ($usedGb GB used of $totalGb GB)"
+            tvStorageUsage.text = "Storage $usedPercent% ($usedGb GB used of $totalGb GB)"
             pbStorage.progress = usedPercent
         } catch (_: Exception) {}
     }
@@ -158,8 +159,12 @@ class MainActivity : AppCompatActivity() {
         val allApps = pm.queryIntentActivities(intent, 0)
         val filteredList = allApps.filter { it.activityInfo.packageName != packageName }
 
-        rvApps.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        rvApps.adapter = AppsAdapter(this, filteredList, pm)
+        val columns = prefs.getInt("grid_columns", 5)
+        val cornerRadiusDp = prefs.getInt("corner_radius", 18)
+
+        // 5 apps per row in a clean 2D Grid (Top 5, then Bottom 5)
+        rvApps.layoutManager = GridLayoutManager(this, columns)
+        rvApps.adapter = AppsAdapter(this, filteredList, pm, cornerRadiusDp)
     }
 
     private fun showSettingsDialog() {
@@ -172,11 +177,27 @@ class MainActivity : AppCompatActivity() {
         val cbAuto = dialogView.findViewById<CheckBox>(R.id.cbAutoMatch)
         val btnChoose = dialogView.findViewById<Button>(R.id.btnChooseWallpaper)
         val btnRemove = dialogView.findViewById<Button>(R.id.btnRemoveWallpaper)
+        val rgCorners = dialogView.findViewById<RadioGroup>(R.id.rgCornerStyle)
+        val rgCols = dialogView.findViewById<RadioGroup>(R.id.rgColumns)
 
         etName.setText(prefs.getString("user_name", "Deep"))
         etAccent.setText(prefs.getString("accent_color", "#FFC107"))
         etBg.setText(prefs.getString("bg_color", "#14110F"))
         cbAuto.isChecked = prefs.getBoolean("auto_match", true)
+
+        val curRadius = prefs.getInt("corner_radius", 18)
+        when (curRadius) {
+            8 -> dialogView.findViewById<RadioButton>(R.id.rbCornerSharp).isChecked = true
+            28 -> dialogView.findViewById<RadioButton>(R.id.rbCornerOval).isChecked = true
+            else -> dialogView.findViewById<RadioButton>(R.id.rbCornerRounded).isChecked = true
+        }
+
+        val curCols = prefs.getInt("grid_columns", 5)
+        when (curCols) {
+            4 -> dialogView.findViewById<RadioButton>(R.id.rbCol4).isChecked = true
+            6 -> dialogView.findViewById<RadioButton>(R.id.rbCol6).isChecked = true
+            else -> dialogView.findViewById<RadioButton>(R.id.rbCol5).isChecked = true
+        }
 
         try {
             previewAccent.setBackgroundColor(Color.parseColor(etAccent.text.toString()))
@@ -206,13 +227,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         dialogView.findViewById<Button>(R.id.btnSave).setOnClickListener {
+            val selectedRadius = when (rgCorners.checkedRadioButtonId) {
+                R.id.rbCornerSharp -> 8
+                R.id.rbCornerOval -> 28
+                else -> 18
+            }
+            val selectedCols = when (rgCols.checkedRadioButtonId) {
+                R.id.rbCol4 -> 4
+                R.id.rbCol6 -> 6
+                else -> 5
+            }
+
             prefs.edit()
                 .putString("user_name", etName.text.toString().trim())
                 .putString("accent_color", etAccent.text.toString().trim())
                 .putString("bg_color", etBg.text.toString().trim())
                 .putBoolean("auto_match", cbAuto.isChecked)
+                .putInt("corner_radius", selectedRadius)
+                .putInt("grid_columns", selectedCols)
                 .apply()
+
             loadPreferences()
+            setupAppsList()
             dialog.dismiss()
         }
 
@@ -261,10 +297,12 @@ class MainActivity : AppCompatActivity() {
     class AppsAdapter(
         private val context: Context,
         private val list: List<ResolveInfo>,
-        private val pm: PackageManager
+        private val pm: PackageManager,
+        private val cornerRadiusDp: Int
     ) : RecyclerView.Adapter<AppsAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val container: FrameLayout = view.findViewById(R.id.rootCardContainer)
             val cardApp: CardView = view.findViewById(R.id.cardApp)
             val ivBanner: ImageView = view.findViewById(R.id.ivAppBanner)
         }
@@ -275,15 +313,35 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val density = context.resources.displayMetrics.density
+            val radiusPx = (cornerRadiusDp * density)
+            holder.cardApp.radius = radiusPx
+
             val item = list[position]
-            val banner: Drawable? = item.activityInfo.loadBanner(pm)
+            val banner = item.activityInfo.loadBanner(pm)
             if (banner != null) {
                 holder.ivBanner.setImageDrawable(banner)
             } else {
                 holder.ivBanner.setImageDrawable(item.loadIcon(pm))
             }
 
-            holder.cardApp.setOnClickListener {
+            // TV Remote Focus smooth zoom & outline
+            holder.container.setOnFocusChangeListener { v, hasFocus ->
+                if (hasFocus) {
+                    v.animate().scaleX(1.08f).scaleY(1.08f).setDuration(150).start()
+                    val border = GradientDrawable().apply {
+                        cornerRadius = radiusPx
+                        setStroke((3 * density).toInt(), Color.WHITE)
+                        setColor(Color.parseColor("#33FFFFFF"))
+                    }
+                    holder.cardApp.foreground = border
+                } else {
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()
+                    holder.cardApp.foreground = null
+                }
+            }
+
+            holder.container.setOnClickListener {
                 val launchIntent = pm.getLaunchIntentForPackage(item.activityInfo.packageName)
                 if (launchIntent != null) {
                     context.startActivity(launchIntent)

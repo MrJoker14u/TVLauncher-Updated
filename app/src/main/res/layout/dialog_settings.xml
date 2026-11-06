@@ -1,126 +1,228 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="520dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="540dp"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="#233238"
+    android:background="#1E282D"
     android:padding="24dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Launcher settings"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
-
-    <EditText
-        android:id="@+id/etName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Your Name"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#88FFFFFF"
-        android:layout_marginBottom="12dp"/>
-
-    <!-- Accent Color with Preview Tile -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etAccentColor"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="#FFC107"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#88FFFFFF"/>
-
-        <View
-            android:id="@+id/previewAccentColor"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="12dp"
-            android:background="#FFC107"/>
-    </LinearLayout>
-
-    <!-- Background Color with Preview Tile -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
-
-        <EditText
-            android:id="@+id/etBgColor"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="#14110F"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#88FFFFFF"/>
-
-        <View
-            android:id="@+id/previewBgColor"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="12dp"
-            android:background="#14110F"/>
-    </LinearLayout>
-
-    <CheckBox
-        android:id="@+id/cbAutoMatch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Auto-match colors to wallpaper"
-        android:textColor="#FFFFFF"
-        android:checked="true"
-        android:layout_marginBottom="16dp"/>
-
-    <Button
-        android:id="@+id/btnChooseWallpaper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CHOOSE WALLPAPER"
-        android:backgroundTint="#4E585E"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="8dp"/>
-
-    <Button
-        android:id="@+id/btnRemoveWallpaper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="REMOVE WALLPAPER"
-        android:backgroundTint="#4E585E"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="20dp"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnCancel"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CANCEL"
-            android:textColor="#80D8FF"
-            style="?android:attr/borderlessButtonStyle"/>
+            android:text="Launcher Settings"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"/>
 
-        <Button
-            android:id="@+id/btnSave"
+        <!-- Custom Name -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SAVE"
-            android:textColor="#80D8FF"
-            style="?android:attr/borderlessButtonStyle"/>
+            android:text="Your Name"
+            android:textColor="#B0FFFFFF"
+            android:textSize="12sp"/>
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Deep"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#66FFFFFF"
+            android:layout_marginBottom="14dp"/>
+
+        <!-- App Tile Corner Style (Design Customization) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tile Corner Style (Roundness)"
+            android:textColor="#B0FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="6dp"/>
+        <RadioGroup
+            android:id="@+id/rgCornerStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="14dp">
+            <RadioButton
+                android:id="@+id/rbCornerSharp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sharp (8dp)"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"/>
+            <RadioButton
+                android:id="@+id/rbCornerRounded"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Modern (18dp)"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:checked="true"/>
+            <RadioButton
+                android:id="@+id/rbCornerOval"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Curved (28dp)"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"/>
+        </RadioGroup>
+
+        <!-- Grid Layout Columns (Apps per row) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Apps per Row"
+            android:textColor="#B0FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="6dp"/>
+        <RadioGroup
+            android:id="@+id/rgColumns"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="14dp">
+            <RadioButton
+                android:id="@+id/rbCol4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="4 Apps"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"/>
+            <RadioButton
+                android:id="@+id/rbCol5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="5 Apps (Recommended)"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:checked="true"/>
+            <RadioButton
+                android:id="@+id/rbCol6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="6 Apps"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"/>
+        </RadioGroup>
+
+        <!-- Accent Color with Preview -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accent Color Hex"
+            android:textColor="#B0FFFFFF"
+            android:textSize="12sp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+            <EditText
+                android:id="@+id/etAccentColor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="#FFC107"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#66FFFFFF"/>
+            <View
+                android:id="@+id/previewAccentColor"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="12dp"
+                android:background="#FFC107"/>
+        </LinearLayout>
+
+        <!-- Background Color with Preview -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Background Color Hex"
+            android:textColor="#B0FFFFFF"
+            android:textSize="12sp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+            <EditText
+                android:id="@+id/etBgColor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="#14110F"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#66FFFFFF"/>
+            <View
+                android:id="@+id/previewBgColor"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="12dp"
+                android:background="#14110F"/>
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/cbAutoMatch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Auto-match colors to wallpaper"
+            android:textColor="#FFFFFF"
+            android:checked="true"
+            android:layout_marginBottom="14dp"/>
+
+        <Button
+            android:id="@+id/btnChooseWallpaper"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:text="CHOOSE WALLPAPER"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_focus_selector"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btnRemoveWallpaper"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:text="REMOVE WALLPAPER"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_focus_selector"
+            android:layout_marginBottom="18dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CANCEL"
+                android:textColor="#00E5FF"
+                style="?android:attr/borderlessButtonStyle"/>
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAVE"
+                android:textColor="#00E5FF"
+                style="?android:attr/borderlessButtonStyle"/>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>
