@@ -2,17 +2,17 @@ package com.dk.tvlauncher
 
 import android.app.Activity
 import android.app.ActivityManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.StateListDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -45,16 +45,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvStorageUsage: TextView
     private lateinit var pbStorage: ProgressBar
     private lateinit var rvApps: RecyclerView
-    private lateinit var btnUsb: TextView
+    private lateinit var btnSettings: TextView
+    private lateinit var btnTvSettings: TextView
 
     private val handler = Handler(Looper.getMainLooper())
     private val PICK_IMAGE_REQUEST = 1001
-
-    private val usbReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            checkUsbConnected()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,58 +64,22 @@ class MainActivity : AppCompatActivity() {
         tvStorageUsage = findViewById(R.id.tvStorageUsage)
         pbStorage = findViewById(R.id.pbStorage)
         rvApps = findViewById(R.id.rvApps)
-        btnUsb = findViewById(R.id.btnUsb)
+        btnSettings = findViewById(R.id.btnSettings)
+        btnTvSettings = findViewById(R.id.btnTvSettings)
 
         setupButtons()
         loadPreferences()
         setupAppsList()
         updateStorageStats()
         startStatsMonitor()
-        checkUsbConnected()
-        registerUsbReceiver()
-    }
-
-    private fun registerUsbReceiver() {
-        try {
-            val filter = IntentFilter().apply {
-                addAction(Intent.ACTION_MEDIA_MOUNTED)
-                addAction(Intent.ACTION_MEDIA_REMOVED)
-                addAction(Intent.ACTION_MEDIA_UNMOUNTED)
-                addDataScheme("file")
-            }
-            registerReceiver(usbReceiver, filter)
-        } catch (_: Exception) {}
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        try {
-            unregisterReceiver(usbReceiver)
-        } catch (_: Exception) {}
-    }
-
-    private fun checkUsbConnected() {
-        try {
-            val dirs = getExternalFilesDirs(null)
-            val hasUsb = dirs.size > 1
-            if (hasUsb) {
-                btnUsb.text = "● USB (Ready)"
-                btnUsb.setTextColor(Color.parseColor("#00E5FF"))
-            } else {
-                btnUsb.text = "USB"
-                btnUsb.setTextColor(Color.parseColor("#FFFFFF"))
-            }
-        } catch (_: Exception) {
-            btnUsb.text = "USB"
-        }
     }
 
     private fun setupButtons() {
-        findViewById<Button>(R.id.btnSettings).setOnClickListener {
+        btnSettings.setOnClickListener {
             showSettingsDialog()
         }
 
-        findViewById<Button>(R.id.btnTvSettings).setOnClickListener {
+        btnTvSettings.setOnClickListener {
             try {
                 startActivity(Intent(Settings.ACTION_SETTINGS))
             } catch (e: Exception) {
@@ -132,44 +91,62 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnHdmi2).setOnClickListener { openInput("HDMI 2") }
         findViewById<TextView>(R.id.btnAv).setOnClickListener { openInput("AV") }
         findViewById<TextView>(R.id.btnHdmi3).setOnClickListener { openInput("HDMI 3") }
-        btnUsb.setOnClickListener { openUsbDrive() }
     }
 
     private fun openInput(source: String) {
         Toast.makeText(this, "Switching to $source...", Toast.LENGTH_SHORT).show()
     }
 
-    private fun openUsbDrive() {
-        // Try to open external file manager or system storage
-        val intentList = listOf(
-            Intent(Intent.ACTION_VIEW).apply { setDataAndType(Uri.parse("content://media/external/file"), "*/*") },
-            packageManager.getLaunchIntentForPackage("com.alphainventor.filemanager"),
-            packageManager.getLaunchIntentForPackage("com.lonelycatgames.Xplore"),
-            packageManager.getLaunchIntentForPackage("com.estrongs.android.pop"),
-            Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
-        )
+    private fun applyDynamicButtonThemes(accentColor: Int, dominantBgColor: Int) {
+        val density = resources.displayMetrics.density
+        val radius = 10 * density
 
-        for (intent in intentList) {
-            if (intent != null) {
-                try {
-                    startActivity(intent)
-                    return
-                } catch (_: Exception) {}
+        fun createButtonDrawable(): StateListDrawable {
+            val focused = GradientDrawable().apply {
+                cornerRadius = radius
+                setColor(accentColor)
+                setStroke((2 * density).toInt(), Color.WHITE)
+            }
+            val normal = GradientDrawable().apply {
+                cornerRadius = radius
+                // Semi-transparent glassy dominant tint
+                val alphaTint = Color.argb(170, Color.red(dominantBgColor), Color.green(dominantBgColor), Color.blue(dominantBgColor))
+                setColor(alphaTint)
+                setStroke((1 * density).toInt(), Color.argb(120, 255, 255, 255))
+            }
+            return StateListDrawable().apply {
+                addState(intArrayOf(android.R.attr.state_focused), focused)
+                addState(intArrayOf(), normal)
             }
         }
-        Toast.makeText(this, "USB Storage connected. Open File Manager to view.", Toast.LENGTH_SHORT).show()
+
+        btnSettings.background = createButtonDrawable()
+        btnTvSettings.background = createButtonDrawable()
     }
 
     private fun loadPreferences() {
         val userName = prefs.getString("user_name", "Deep") ?: "Deep"
         val bgColor = prefs.getString("bg_color", "#14110F") ?: "#14110F"
+        val accentColorHex = prefs.getString("accent_color", "#00E5FF") ?: "#00E5FF"
         val wallpaperPath = prefs.getString("wallpaper_path", null)
 
         tvGreeting.text = "Good Night, $userName"
 
+        var accentColor = try { Color.parseColor(accentColorHex) } catch (_: Exception) { Color.parseColor("#00E5FF") }
+        var dominantColor = try { Color.parseColor(bgColor) } catch (_: Exception) { Color.parseColor("#1E282D") }
+
         if (wallpaperPath != null && File(wallpaperPath).exists()) {
             val bitmap = BitmapFactory.decodeFile(wallpaperPath)
             mainRootLayout.background = BitmapDrawable(resources, bitmap)
+
+            if (prefs.getBoolean("auto_match", true)) {
+                Palette.from(bitmap).generate { palette ->
+                    val vib = palette?.getVibrantColor(accentColor) ?: accentColor
+                    val dom = palette?.getDarkVibrantColor(dominantColor) ?: dominantColor
+                    applyDynamicButtonThemes(vib, dom)
+                }
+                return
+            }
         } else {
             try {
                 mainRootLayout.setBackgroundColor(Color.parseColor(bgColor))
@@ -177,6 +154,8 @@ class MainActivity : AppCompatActivity() {
                 mainRootLayout.setBackgroundColor(Color.parseColor("#14110F"))
             }
         }
+
+        applyDynamicButtonThemes(accentColor, dominantColor)
     }
 
     private fun startStatsMonitor() {
@@ -226,13 +205,30 @@ class MainActivity : AppCompatActivity() {
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
 
         val allApps = pm.queryIntentActivities(intent, 0)
-        val filteredList = allApps.filter { it.activityInfo.packageName != packageName }
+        val filteredList = allApps.filter { it.activityInfo.packageName != packageName }.toMutableList()
 
         val columns = prefs.getInt("grid_columns", 5)
         val cornerRadiusDp = prefs.getInt("corner_radius", 20)
 
         rvApps.layoutManager = GridLayoutManager(this, columns)
-        rvApps.adapter = AppsAdapter(this, filteredList, pm, cornerRadiusDp)
+        rvApps.adapter = AppsAdapter(this, filteredList, pm, cornerRadiusDp) {
+            openAddAppFlow()
+        }
+    }
+
+    private fun openAddAppFlow() {
+        // Open Google Play Store on TV or App installer
+        val storeIntent = packageManager.getLaunchIntentForPackage("com.android.vending")
+        if (storeIntent != null) {
+            startActivity(storeIntent)
+        } else {
+            try {
+                val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=apps"))
+                startActivity(marketIntent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Opening App Store...", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showSettingsDialog() {
@@ -249,7 +245,7 @@ class MainActivity : AppCompatActivity() {
         val rgCols = dialogView.findViewById<RadioGroup>(R.id.rgColumns)
 
         etName.setText(prefs.getString("user_name", "Deep"))
-        etAccent.setText(prefs.getString("accent_color", "#FFC107"))
+        etAccent.setText(prefs.getString("accent_color", "#00E5FF"))
         etBg.setText(prefs.getString("bg_color", "#14110F"))
         cbAuto.isChecked = prefs.getBoolean("auto_match", true)
 
@@ -355,7 +351,9 @@ class MainActivity : AppCompatActivity() {
                 Palette.from(bitmap).generate { palette ->
                     val domColor = palette?.getDarkVibrantColor(Color.parseColor("#14110F")) ?: Color.parseColor("#14110F")
                     val hexColor = String.format("#%06X", (0xFFFFFF and domColor))
-                    prefs.edit().putString("bg_color", hexColor).apply()
+                    val vibColor = palette?.getVibrantColor(Color.parseColor("#00E5FF")) ?: Color.parseColor("#00E5FF")
+                    val vibHex = String.format("#%06X", (0xFFFFFF and vibColor))
+                    prefs.edit().putString("bg_color", hexColor).putString("accent_color", vibHex).apply()
                     loadPreferences()
                 }
             } else {
@@ -368,14 +366,23 @@ class MainActivity : AppCompatActivity() {
         private val context: Context,
         private val list: List<ResolveInfo>,
         private val pm: PackageManager,
-        private val cornerRadiusDp: Int
+        private val cornerRadiusDp: Int,
+        private val onAddClick: () -> Unit
     ) : RecyclerView.Adapter<AppsAdapter.ViewHolder>() {
+
+        private val TYPE_APP = 0
+        private val TYPE_ADD = 1
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val container: FrameLayout = view.findViewById(R.id.rootCardContainer)
             val cardApp: CardView = view.findViewById(R.id.cardApp)
             val ivBanner: ImageView = view.findViewById(R.id.ivAppBanner)
             val focusBorderView: View = view.findViewById(R.id.focusBorderView)
+            val layoutAdd: LinearLayout = view.findViewById(R.id.layoutAddCard)
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            return if (position < list.size) TYPE_APP else TYPE_ADD
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -386,24 +393,53 @@ class MainActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val density = context.resources.displayMetrics.density
             val radiusPx = (cornerRadiusDp * density)
-            
-            // Apply exact corner radius and make card clip directly to bounds
+
             holder.cardApp.radius = radiusPx
             holder.cardApp.cardElevation = 0f
             holder.cardApp.maxCardElevation = 0f
 
-            val item = list[position]
-            val banner = item.activityInfo.loadBanner(pm)
-            if (banner != null) {
-                holder.ivBanner.setImageDrawable(banner)
+            if (getItemViewType(position) == TYPE_ADD) {
+                // Show Add App Card (+)
+                holder.ivBanner.visibility = View.GONE
+                holder.layoutAdd.visibility = View.VISIBLE
+                
+                // Glassy background for Add button
+                val addBg = GradientDrawable().apply {
+                    cornerRadius = radiusPx
+                    setColor(Color.parseColor("#33FFFFFF"))
+                    setStroke((1.5f * density).toInt(), Color.parseColor("#66FFFFFF"))
+                }
+                holder.cardApp.background = addBg
+
+                holder.container.setOnClickListener {
+                    onAddClick()
+                }
             } else {
-                holder.ivBanner.setImageDrawable(item.loadIcon(pm))
+                // Regular App Tile
+                holder.layoutAdd.visibility = View.GONE
+                holder.ivBanner.visibility = View.VISIBLE
+                holder.cardApp.background = null
+
+                val item = list[position]
+                val banner = item.activityInfo.loadBanner(pm)
+                if (banner != null) {
+                    holder.ivBanner.setImageDrawable(banner)
+                } else {
+                    holder.ivBanner.setImageDrawable(item.loadIcon(pm))
+                }
+
+                holder.container.setOnClickListener {
+                    val launchIntent = pm.getLaunchIntentForPackage(item.activityInfo.packageName)
+                    if (launchIntent != null) {
+                        context.startActivity(launchIntent)
+                    }
+                }
             }
 
-            // TV Remote Focus Outline matching the exact corner radius
+            // TV Remote Focus Outline matching the exact corner radius without cutting top
             holder.container.setOnFocusChangeListener { v, hasFocus ->
                 if (hasFocus) {
-                    v.animate().scaleX(1.08f).scaleY(1.08f).setDuration(140).start()
+                    v.animate().scaleX(1.07f).scaleY(1.07f).setDuration(120).start()
                     val border = GradientDrawable().apply {
                         cornerRadius = radiusPx
                         setStroke((3.5f * density).toInt(), Color.WHITE)
@@ -412,19 +448,13 @@ class MainActivity : AppCompatActivity() {
                     holder.focusBorderView.background = border
                     holder.focusBorderView.visibility = View.VISIBLE
                 } else {
-                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(140).start()
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
                     holder.focusBorderView.visibility = View.GONE
-                }
-            }
-
-            holder.container.setOnClickListener {
-                val launchIntent = pm.getLaunchIntentForPackage(item.activityInfo.packageName)
-                if (launchIntent != null) {
-                    context.startActivity(launchIntent)
                 }
             }
         }
 
-        override fun getItemCount(): Int = list.size
+        // Total apps + 1 for Add Button (+)
+        override fun getItemCount(): Int = list.size + 1
     }
 }

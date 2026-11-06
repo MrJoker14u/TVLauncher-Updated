@@ -1,2 +1,2 @@
-# TVLauncher v4
-Exact Banner Clipping (No Inner Dark Padding) + USB Drive Auto-Detection & Input Option
+# TVLauncher v5
+Top cut fixed, USB removed, Plus (+) Add App card added, Dynamic Wallpaper Palette button theming

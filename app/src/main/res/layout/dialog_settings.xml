@@ -35,7 +35,7 @@
             android:textColorHint="#66FFFFFF"
             android:layout_marginBottom="14dp"/>
 
-        <!-- App Tile Corner Style (Direct Banner Clipping) -->
+        <!-- App Tile Corner Style -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,7 +84,7 @@
                 android:textSize="12sp"/>
         </RadioGroup>
 
-        <!-- Grid Layout Columns (Apps per row) -->
+        <!-- Grid Layout Columns -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -187,7 +187,7 @@
             android:id="@+id/cbAutoMatch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Auto-match colors to wallpaper"
+            android:text="Auto-match buttons &amp; theme to wallpaper"
             android:textColor="#FFFFFF"
             android:checked="true"
             android:layout_marginBottom="14dp"/>
@@ -198,7 +198,7 @@
             android:layout_height="42dp"
             android:text="CHOOSE WALLPAPER"
             android:textColor="#FFFFFF"
-            android:background="@drawable/btn_focus_selector"
+            android:background="@drawable/input_btn_selector"
             android:layout_marginBottom="8dp"/>
 
         <Button
@@ -207,7 +207,7 @@
             android:layout_height="42dp"
             android:text="REMOVE WALLPAPER"
             android:textColor="#FFFFFF"
-            android:background="@drawable/btn_focus_selector"
+            android:background="@drawable/input_btn_selector"
             android:layout_marginBottom="18dp"/>
 
         <LinearLayout

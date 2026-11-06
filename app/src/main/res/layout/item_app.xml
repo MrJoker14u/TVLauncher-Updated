@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="105dp"
     android:layout_margin="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:focusable="true"
     android:clickable="true">
 
@@ -12,7 +14,7 @@
         android:id="@+id/cardApp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardCornerRadius="18dp"
+        app:cardCornerRadius="20dp"
         app:cardElevation="0dp"
         app:cardMaxElevation="0dp"
         app:cardPreventCornerOverlap="false"
@@ -25,9 +27,34 @@
             android:layout_height="match_parent"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"/>
+
+        <!-- Layout for the Add (+) card -->
+        <LinearLayout
+            android:id="@+id/layoutAddCard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ivAddIcon"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:src="@drawable/ic_add"/>
+
+            <TextView
+                android:id="@+id/tvAddLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add App"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Crisp border highlight on focus -->
     <View
         android:id="@+id/focusBorderView"
         android:layout_width="match_parent"
